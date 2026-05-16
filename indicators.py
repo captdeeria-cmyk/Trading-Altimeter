@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 warnings.filterwarnings("ignore")
-logging.basicConfig(level=logging.WARNING)
 
 HMA_LENGTH = 200          
 NEAR_ZONE_PCT = 1.5       
@@ -23,13 +22,10 @@ def compute_hma(close: pd.Series, length: int = HMA_LENGTH) -> pd.Series:
         return pd.Series(np.nan, index=close.index)
     half = length // 2
     sqrt_len = int(np.floor(np.sqrt(length)))
-    wma_half = _wma(close, half)
-    wma_full = _wma(close, length)
-    raw = 2 * wma_half - wma_full
-    return _wma(raw, sqrt_len)
+    return _wma(2 * _wma(close, half) - _wma(close, length), sqrt_len)
 
 def calculate_dhan_indicators(df: pd.DataFrame) -> pd.DataFrame:
-    if df.empty or len(df) < HMA_LENGTH:
+    if df.empty or len(df) < 50: # Safe lower bounds boundary
         return df
     
     close = df["Close"]
@@ -43,54 +39,32 @@ def calculate_dhan_indicators(df: pd.DataFrame) -> pd.DataFrame:
     rs = gain / loss.replace(0, np.nan)
     df["RSI_14"] = 100 - (100 / (1 + rs))
     
-    exp1 = close.ewm(span=12, adjust=False).mean()
-    exp2 = close.ewm(span=26, adjust=False).mean()
-    df["MACD"] = exp1 - exp2
+    df["MACD"] = close.ewm(span=12, adjust=False).mean() - close.ewm(span=26, adjust=False).mean()
     df["MACD_Signal"] = df["MACD"].ewm(span=9, adjust=False).mean()
     df["MACD_Hist"] = df["MACD"] - df["MACD_Signal"]
     return df
 
 def classify_dhan_signal(df: pd.DataFrame) -> dict:
-    if df.empty or "HMA_200" not in df.columns:
-        return _empty_signal()
+    if df.empty or "HMA_200" not in df.columns or pd.isna(df["HMA_200"].iloc[-1]):
+        return {"signal": "NEUTRAL", "hma_value": 0.0, "close_value": 0.0, "distance_pct": 0.0, "above_hma": False, "ltp": df["Close"].iloc[-1] if not df.empty else 0.0}
 
-    recent = df.dropna(subset=["HMA_200", "Close"]).tail(2)
-    if len(recent) < 2:
-        return _empty_signal()
+    curr = df.iloc[-1]
+    prev = df.iloc[-2]
 
-    prev = recent.iloc[-2]
-    curr = recent.iloc[-1]
-
-    hma_curr = curr["HMA_200"]
-    close_curr = curr["Close"]
-    close_prev = prev["Close"]
-    hma_prev = prev["HMA_200"]
-
-    if hma_curr == 0 or np.isnan(hma_curr):
-        return _empty_signal()
-
+    hma_curr, close_curr = float(curr["HMA_200"]), float(curr["Close"])
     distance_pct = ((close_curr - hma_curr) / hma_curr) * 100
     above_hma = close_curr > hma_curr
-    was_above = close_prev > hma_prev
-    in_near_zone = abs(distance_pct) <= NEAR_ZONE_PCT
-
-    if (not was_above) and above_hma:
+    
+    if not (prev["Close"] > prev["HMA_200"]) and above_hma:
         signal = "🚀 BULLISH BREAKOUT"
-    elif was_above and (not above_hma):
+    elif (prev["Close"] > prev["HMA_200"]) and not above_hma:
         signal = "💀 BEARISH BREAKDOWN"
-    elif in_near_zone:
+    elif abs(distance_pct) <= NEAR_ZONE_PCT:
         signal = "👀 APPROACHING"
     else:
         signal = "🚀 BULLISH TREND" if above_hma else "💀 BEARISH TREND"
 
     return {
-        "signal": signal,
-        "hma_value": float(hma_curr),
-        "close_value": float(close_curr),
-        "distance_pct": float(distance_pct),
-        "above_hma": bool(above_hma),
-        "ltp": float(close_curr)
+        "signal": signal, "hma_value": hma_curr, "close_value": close_curr,
+        "distance_pct": distance_pct, "above_hma": above_hma, "ltp": close_curr
     }
-
-def _empty_signal() -> dict:
-    return {"signal": "NEUTRAL", "hma_value": 0.0, "close_value": 0.0, "distance_pct": 0.0, "above_hma": False, "ltp": 0.0}
