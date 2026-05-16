@@ -41,13 +41,13 @@ def inject_css():
     """, unsafe_allow_html=True)
 
 def render_sidebar_header():
-    logo_path = os.path.join("assets", "logo.png")
+    logo_path = "logo.png"
     if os.path.exists(logo_path): st.image(logo_path, width=100)
     else: st.markdown("<h1 style='color:#2563EB;'>✈️</h1>", unsafe_allow_html=True)
     st.markdown("<div class='sidebar-title'>TRADING ALTIMETER</div><div class='sidebar-sub'>Navigating The Markets With Cockpit Discipline</div>", unsafe_allow_html=True)
 
 def render_banner():
-    banner_path = os.path.join("assets", "banner.png")
+    banner_path = "banner.png"
     if os.path.exists(banner_path): st.image(banner_path, use_container_width=True)
 
 def signal_badge(signal):
