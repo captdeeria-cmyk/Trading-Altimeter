@@ -1,17 +1,20 @@
 """
 app.py — Trading Altimeter
-Main application entry point.
+Main application entry point. Handles routing between pages,
+sidebar navigation, and renders all feature modules.
+
+Run with: streamlit run app.py
 """
 
-import streamlit as st
 import datetime
 import logging
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import streamlit as st
 
-# ── RULE 1: THIS MUST ABSOLUTELY BE THE FIRST STREAMLIT OPERATION ──
+# ── App config (MUST be first Streamlit call) ─────────────────────────────
 st.set_page_config(
     page_title="Trading Altimeter",
     page_icon="✈",
@@ -19,9 +22,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── NOW IT IS SAFE TO IMPORT SCRIPT MODULES ──
+# ── Safe Module Imports ───────────────────────────────────────────────────
 from utils import (
-    inject_css, NSE_250, NIFTY_50,
+    inject_css, NSE_250, NIFTY_50, to_yf_ticker,
     render_sidebar_header, render_banner, signal_badge, format_currency,
 )
 from indicators import (
@@ -35,14 +38,8 @@ from dhan_broker import render_order_panel
 
 logger = logging.getLogger(__name__)
 
-# ── RUN STYLE INJECTIONS NEXT ──
+# ── Inject Styling Engines ────────────────────────────────────────────────
 inject_css()
-
-# ... (The rest of your router logic below remains the same)"""
-app.py — Trading Altimeter
-"""
-import streamlit as st
-import pandas as pd
 import plotly.graph_objects as go
 
 # CRITICAL: This call MUST happen before any custom CSS injections or utility imports
