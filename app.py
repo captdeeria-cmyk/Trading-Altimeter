@@ -75,12 +75,12 @@ with st.sidebar:
     market_close = now_ist.replace(hour=15, minute=30, second=0)
     is_open = (market_open <= now_ist <= market_close
                and now_ist.weekday() < 5)
-    mkt_color = "#00E676" if is_open else "#FF1744"
+    mkt_color = "#16A34A" if is_open else "#DC2626" # Light Mode Green / Red
     mkt_label = "● MARKET OPEN" if is_open else "● MARKET CLOSED"
     st.markdown(
         f'<div style="text-align:center;font-size:0.75rem;'
         f'color:{mkt_color};font-weight:700">{mkt_label}</div>'
-        f'<div style="text-align:center;font-size:0.7rem;color:#8A8D94">'
+        f'<div style="text-align:center;font-size:0.7rem;color:#6B7280">' # Soft Grey
         f'IST {now_ist.strftime("%H:%M:%S")}</div>',
         unsafe_allow_html=True,
     )
@@ -108,7 +108,7 @@ def render_dashboard():
         sensex_data = fetch_live_quote("^BSESN")
         col1, col2, col3 = st.columns(3)
         with col1:
-            color = "#00E676" if nifty_data["change_pct"] >= 0 else "#FF1744"
+            color = "#16A34A" if nifty_data["change_pct"] >= 0 else "#DC2626"
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-label">NIFTY 50</div>
@@ -117,7 +117,7 @@ def render_dashboard():
                     {nifty_data['change_pct']:+.2f}%</div>
             </div>""", unsafe_allow_html=True)
         with col2:
-            color = "#00E676" if sensex_data["change_pct"] >= 0 else "#FF1744"
+            color = "#16A34A" if sensex_data["change_pct"] >= 0 else "#DC2626"
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-label">SENSEX</div>
@@ -131,7 +131,7 @@ def render_dashboard():
             <div class="metric-card">
                 <div class="metric-label">INDIA VIX</div>
                 <div class="metric-value">{vix_data['ltp']:.2f}</div>
-                <div style="color:#8A8D94;font-size:0.85rem">Volatility Index</div>
+                <div style="color:#6B7280;font-size:0.85rem">Volatility Index</div>
             </div>""", unsafe_allow_html=True)
     except Exception:
         pass
@@ -142,7 +142,6 @@ def render_dashboard():
     st.markdown("**Live Prices — click a stock to analyse**")
 
     # Batch fetch with progress indicator
-    batch_size = 50  # Show first 50 by default
     selected_batch = st.selectbox(
         "Show stocks from:",
         ["Nifty 50", "Next 50", "F&O Stocks (101-150)", "F&O Stocks (151-200)",
@@ -177,7 +176,7 @@ def render_dashboard():
                 sym = q["symbol"]
                 chg = q["change_pct"]
                 ltp = q["ltp"]
-                color = "#00E676" if chg >= 0 else "#FF1744"
+                color = "#16A34A" if chg >= 0 else "#DC2626"
                 sign = "+" if chg >= 0 else ""
                 # Clickable card
                 if st.button(
@@ -230,7 +229,7 @@ def render_stock_analysis():
 
     # ── Header: signal + quick stats ──────────────────────────────────────
     quote = fetch_live_quote(symbol_ns)
-    chg_color = "#00E676" if quote["change_pct"] >= 0 else "#FF1744"
+    chg_color = "#16A34A" if quote["change_pct"] >= 0 else "#DC2626"
 
     col1, col2, col3, col4 = st.columns([2, 2, 2, 3])
     with col1:
@@ -246,16 +245,16 @@ def render_stock_analysis():
         <div class="metric-card">
             <div class="metric-label">200 HMA</div>
             <div class="metric-value">₹{sig['hma_value']:,.2f}</div>
-            <div style="color:#8A8D94;font-size:0.75rem">{sig['last_date']}</div>
+            <div style="color:#6B7280;font-size:0.75rem">{sig['last_date']}</div>
         </div>""", unsafe_allow_html=True)
     with col3:
-        dist_color = "#00E676" if sig["distance_pct"] >= 0 else "#FF1744"
+        dist_color = "#16A34A" if sig["distance_pct"] >= 0 else "#DC2626"
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-label">Distance to HMA</div>
             <div class="metric-value" style="color:{dist_color}">
                 {sig['distance_pct']:+.2f}%</div>
-            <div style="color:#8A8D94;font-size:0.75rem">
+            <div style="color:#6B7280;font-size:0.75rem">
                 {'Above' if sig['above_hma'] else 'Below'} HMA</div>
         </div>""", unsafe_allow_html=True)
     with col4:
@@ -278,34 +277,34 @@ def render_stock_analysis():
         subplot_titles=[f"{symbol} — Price + 200 HMA", "Volume", "RSI (14)", "MACD"],
     )
 
-    # Row 1: Candlestick + HMA + EMA
+    # Row 1: Candlestick + HMA + EMA (Light Mode Colors)
     fig.add_trace(go.Candlestick(
         x=df.index,
         open=df["Open"], high=df["High"],
         low=df["Low"], close=df["Close"],
-        increasing_line_color="#00E676",
-        decreasing_line_color="#FF1744",
+        increasing_line_color="#16A34A", # Standard Green
+        decreasing_line_color="#DC2626", # Standard Red
         name="Price", showlegend=False,
     ), row=1, col=1)
 
-    # 200 HMA — thick yellow, the star of the show
+    # 200 HMA — thick gold/amber (stands out on white)
     fig.add_trace(go.Scatter(
         x=df.index, y=df["HMA_200"],
-        line=dict(color="#FFD700", width=3),
+        line=dict(color="#D97706", width=3),
         name="200 HMA",
     ), row=1, col=1)
 
     if "EMA_20" in df.columns:
         fig.add_trace(go.Scatter(
             x=df.index, y=df["EMA_20"],
-            line=dict(color="#00D4FF", width=1.2, dash="dot"),
+            line=dict(color="#2563EB", width=1.2, dash="dot"),
             name="EMA 20",
         ), row=1, col=1)
 
     if "EMA_50" in df.columns:
         fig.add_trace(go.Scatter(
             x=df.index, y=df["EMA_50"],
-            line=dict(color="#FF9800", width=1.2, dash="dot"),
+            line=dict(color="#F59E0B", width=1.2, dash="dot"),
             name="EMA 50",
         ), row=1, col=1)
 
@@ -313,9 +312,9 @@ def render_stock_analysis():
     if sig["signal"] in ("BULLISH", "BEARISH"):
         try:
             last_row = df.dropna(subset=["HMA_200"]).iloc[-1]
-            arrow_color = "#00E676" if sig["signal"] == "BULLISH" else "#FF1744"
+            arrow_color = "#16A34A" if sig["signal"] == "BULLISH" else "#DC2626"
             ay_offset = -50 if sig["signal"] == "BULLISH" else 50
-            label = "🚀 BREAKOUT" if sig["signal"] == "BULLISH" else "💀 BREAKDOWN"
+            label = "🚀 BREAKOUT" if sig["signal"] == "BULLISH" else "📉 BREAKDOWN"
             fig.add_annotation(
                 x=last_row.name,
                 y=float(last_row["Close"]),
@@ -333,7 +332,7 @@ def render_stock_analysis():
 
     # Row 2: Volume
     vol_colors = [
-        "#00E676" if df["Close"].iloc[i] >= df["Open"].iloc[i] else "#FF1744"
+        "#16A34A" if df["Close"].iloc[i] >= df["Open"].iloc[i] else "#DC2626"
         for i in range(len(df))
     ]
     fig.add_trace(go.Bar(
@@ -346,28 +345,28 @@ def render_stock_analysis():
     if "RSI_14" in df.columns:
         fig.add_trace(go.Scatter(
             x=df.index, y=df["RSI_14"],
-            line=dict(color="#00D4FF", width=1.5),
+            line=dict(color="#2563EB", width=1.5),
             name="RSI", showlegend=False,
         ), row=3, col=1)
-        fig.add_hline(y=70, line_color="#FF1744", line_dash="dash",
+        fig.add_hline(y=70, line_color="#DC2626", line_dash="dash",
                       line_width=1, row=3, col=1)
-        fig.add_hline(y=30, line_color="#00E676", line_dash="dash",
+        fig.add_hline(y=30, line_color="#16A34A", line_dash="dash",
                       line_width=1, row=3, col=1)
 
     # Row 4: MACD
     if "MACD" in df.columns:
         fig.add_trace(go.Scatter(
             x=df.index, y=df["MACD"],
-            line=dict(color="#00E676", width=1.5),
+            line=dict(color="#2563EB", width=1.5),
             name="MACD", showlegend=False,
         ), row=4, col=1)
         fig.add_trace(go.Scatter(
             x=df.index, y=df["MACD_Signal"],
-            line=dict(color="#FF1744", width=1.5),
+            line=dict(color="#DC2626", width=1.5),
             name="Signal", showlegend=False,
         ), row=4, col=1)
         hist_colors = [
-            "#00E676" if v >= 0 else "#FF1744"
+            "#16A34A" if v >= 0 else "#DC2626"
             for v in df["MACD_Hist"].fillna(0)
         ]
         fig.add_trace(go.Bar(
@@ -376,16 +375,20 @@ def render_stock_analysis():
             name="MACD Hist", showlegend=False,
         ), row=4, col=1)
 
-     fig.update_layout(
+    fig.update_layout(
         height=800,
         template="plotly_white",
-        paper_bgcolor="#FAF9F6",  # Matches your Light Cream background
+        paper_bgcolor="#FAF9F6",  # Matches Light Cream
         plot_bgcolor="#FFFFFF",    # White chart area
         font=dict(color="#1F2937", size=11), # Dark grey text
+        xaxis_rangeslider_visible=False,
+        legend=dict(orientation="h", yanchor="bottom", y=1.01,
+                    xanchor="right", x=1, bgcolor="rgba(0,0,0,0)"),
+        margin=dict(l=40, r=20, t=60, b=20),
     )
     # Style subplot title fonts
     for annotation in fig.layout.annotations:
-        annotation.font.color = "#8A8D94"
+        annotation.font.color = "#6B7280"
         annotation.font.size = 11
 
     st.plotly_chart(fig, use_container_width=True)
@@ -411,12 +414,12 @@ def render_stock_analysis():
                 url = item.get("url", "#")
 
                 st.markdown(
-                    f'<div style="padding:8px 0;border-bottom:1px solid #2A2D35">'
+                    f'<div style="padding:8px 0;border-bottom:1px solid #E5E7EB">'
                     f'<span class="{tag_class}">{item.get("label", "NEUTRAL")}</span>&nbsp;'
                     f'<a href="{url}" target="_blank" '
-                    f'style="color:#E0E0E0;text-decoration:none;font-size:0.88rem">'
+                    f'style="color:#1F2937;text-decoration:none;font-size:0.88rem">'
                     f'{headline}</a><br>'
-                    f'<span style="font-size:0.72rem;color:#8A8D94">'
+                    f'<span style="font-size:0.72rem;color:#6B7280">'
                     f'{source} · {date_str}</span>'
                     f'</div>',
                     unsafe_allow_html=True,
@@ -433,8 +436,8 @@ def render_backtester():
                 unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="ta-card" style="font-size:0.82rem;color:#8A8D94">
-        <strong style="color:#00D4FF">Strategy:</strong>
+    <div class="ta-card" style="font-size:0.82rem;color:#6B7280">
+        <strong style="color:#2563EB">Strategy:</strong>
         Buy when daily close crosses <strong>above</strong> the 200 HMA.
         Sell when it crosses <strong>below</strong>.
         100% capital allocation, compounding, no slippage.
@@ -490,13 +493,13 @@ def render_backtester():
     # ── Metrics cards ─────────────────────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
     cols = st.columns(6)
-    net_color = "#00E676" if metrics["net_profit_inr"] >= 0 else "#FF1744"
+    net_color = "#16A34A" if metrics["net_profit_inr"] >= 0 else "#DC2626"
     cards = [
-        ("Total Trades", str(metrics["total_trades"]), "#E0E0E0"),
-        ("Win Rate", f"{metrics['win_rate']}%", "#00E676"),
-        ("Avg Win", f"{metrics['avg_win']:+.2f}%", "#00E676"),
-        ("Avg Loss", f"{metrics['avg_loss']:+.2f}%", "#FF1744"),
-        ("Max Drawdown", f"{metrics['max_drawdown']:.2f}%", "#FF1744"),
+        ("Total Trades", str(metrics["total_trades"]), "#1F2937"),
+        ("Win Rate", f"{metrics['win_rate']}%", "#16A34A"),
+        ("Avg Win", f"{metrics['avg_win']:+.2f}%", "#16A34A"),
+        ("Avg Loss", f"{metrics['avg_loss']:+.2f}%", "#DC2626"),
+        ("Max Drawdown", f"{metrics['max_drawdown']:.2f}%", "#DC2626"),
         ("Net P&L",
          f"₹{metrics['net_profit_inr']:,.0f} ({metrics['net_profit_pct']:+.1f}%)",
          net_color),
@@ -537,9 +540,9 @@ def render_scanner():
                 unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="ta-card" style="font-size:0.82rem;color:#8A8D94">
+    <div class="ta-card" style="font-size:0.82rem;color:#6B7280">
         Scans all 250 stocks for 200 HMA signals.
-        <strong style="color:#FF1744">Heavy operation — may take 2-5 minutes.</strong>
+        <strong style="color:#DC2626">Heavy operation — may take 2-5 minutes.</strong>
         Results are cached for 5 minutes.
     </div>""", unsafe_allow_html=True)
 
@@ -583,15 +586,15 @@ def render_scanner():
     col1, col2, col3 = st.columns(3)
     col1.markdown(f'<div class="metric-card">'
                   f'<div class="metric-label">🚀 Bullish Breakouts</div>'
-                  f'<div class="metric-value" style="color:#00E676">{len(bullish)}</div>'
+                  f'<div class="metric-value" style="color:#16A34A">{len(bullish)}</div>'
                   f'</div>', unsafe_allow_html=True)
     col2.markdown(f'<div class="metric-card">'
-                  f'<div class="metric-label">💀 Bearish Breakdowns</div>'
-                  f'<div class="metric-value" style="color:#FF1744">{len(bearish)}</div>'
+                  f'<div class="metric-label">📉 Bearish Breakdowns</div>'
+                  f'<div class="metric-value" style="color:#DC2626">{len(bearish)}</div>'
                   f'</div>', unsafe_allow_html=True)
     col3.markdown(f'<div class="metric-card">'
                   f'<div class="metric-label">👀 Approaching HMA</div>'
-                  f'<div class="metric-value" style="color:#00D4FF">{len(approaching)}</div>'
+                  f'<div class="metric-value" style="color:#2563EB">{len(approaching)}</div>'
                   f'</div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
