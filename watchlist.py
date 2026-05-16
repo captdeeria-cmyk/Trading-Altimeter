@@ -9,27 +9,29 @@ from indicators import calculate_dhan_indicators, classify_dhan_signal
 def render_watchlist_page():
     st.subheader("⭐ Custom Trading Watchlist")
     
-    # Simple list tracking simulation context
     if "watchlist_items" not in st.session_state:
-        st.session_state["watchlist_items"] = ["RELIANCE", "TCS"]
+        st.session_state["watchlist_items"] = ["RELIANCE", "TCS", "HDFCBANK"]
         
-    new_stock = st.text_input("Add NSE Ticker Symbol:", "").upper().strip()
-    if st.button("➕ Add to System Grid") and new_stock:
+    new_stock = st.text_input("Enter NSE Ticker:", "").upper().strip()
+    if st.button("➕ Add Asset to List") and new_stock:
         if new_stock not in st.session_state["watchlist_items"]:
             st.session_state["watchlist_items"].append(new_stock)
             st.rerun()
             
-    # Mock lookup database for scanner rendering
-    sec_ids = {"RELIANCE": "2885", "TCS": "11536", "HDFCBANK": "1333"}
+    ticker_ids = {"RELIANCE": "2885", "TCS": "11536", "HDFCBANK": "1333", "INFY": "1594", "ICICIBANK": "4963"}
     
     rows = []
-    for item in st.session_state["watchlist_items"]:
-        sid = sec_ids.get(item, "2885")
-        df_candles = fetch_historical_candles(sid)
+    for symbol in st.session_state["watchlist_items"]:
+        security_id = ticker_ids.get(symbol, "2885")
+        df_candles = fetch_historical_candles(security_id)
         if not df_candles.empty:
             df_proc = calculate_dhan_indicators(df_candles)
-            sig = classify_dhan_signal(df_proc)
-            rows.append({"Symbol": item, "LTP": f"₹{sig['ltp']:.2f}", "Altimeter Vector": sig['signal']})
+            profile = classify_dhan_signal(df_proc)
+            rows.append({
+                "Symbol": symbol, 
+                "LTP": f"₹{profile['ltp']:.2f}", 
+                "Altimeter Status": profile['signal']
+            })
             
     if rows:
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
