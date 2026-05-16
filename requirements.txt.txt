@@ -1,0 +1,10 @@
+streamlit>=1.32.0
+yfinance>=0.2.38
+pandas>=2.0.0
+pandas_ta>=0.3.14b
+plotly>=5.18.0
+dhanhq>=2.0.0
+python-dotenv>=1.0.0
+vaderSentiment>=3.3.2
+requests>=2.31.0
+numpy>=1.26.0
