@@ -1,323 +1,60 @@
-"""
-utils.py — Trading Altimeter
-Shared utilities: custom CSS, NSE stock universe (250 liquid stocks),
-and general helper functions used across the application.
-"""
-
+import os
 import streamlit as st
+import pandas as pd
+import numpy as np
 
-
-# ---------------------------------------------------------------------------
-# CUSTOM CSS — Deep dark aviation theme
-# ---------------------------------------------------------------------------
-
+# ── STRICT PREMIUM LIGHT THEME ──────────────────────────────────────────
 def inject_css():
-    """Inject global CSS for the Trading Altimeter PROFESSIONAL LIGHT THEME."""
     st.markdown("""
     <style>
-    /* ── FORCE PURE WHITE LIGHT MODE ── */
-    html, body, [data-testid="stAppViewContainer"] {
-        background-color: #F3F4F6 !important;
-        color: #1F2937 !important;
-        font-family: 'Inter', 'Segoe UI', sans-serif;
-    }
-    [data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        border-right: 1px solid #E5E7EB !important;
-    }
+    html, body, [data-testid="stAppViewContainer"] { background-color: #F8F9FA !important; color: #212529 !important; }
+    [data-testid="stSidebar"] { background-color: #FFFFFF !important; border-right: 1px solid #E0E0E0 !important; }
+    .ta-card, .metric-card { background: #FFFFFF; border: 1px solid #E0E0E0; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); padding: 1rem; }
+    .metric-label { font-size: 0.7rem; color: #6C757D; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; font-weight: 600;}
+    .metric-value { font-size: 1.4rem; font-weight: 700; color: #212529; }
     
-    /* ── Cards (White with soft shadows) ── */
-    .ta-card {
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 10px;
-        padding: 1rem 1.25rem;
-        margin-bottom: 0.75rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
+    /* BEAUTIFUL STOCK CARDS FOR DASHBOARD */
+    .stock-card { background: #FFFFFF; border: 1px solid #E0E0E0; border-radius: 10px; padding: 10px; text-align: center; transition: all 0.2s; cursor: pointer; }
+    .stock-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #2563EB; }
+    .stock-name { font-size: 0.8rem; font-weight: 800; color: #343A40; margin-bottom: 4px; letter-spacing: 0.03em; }
+    .stock-price { font-size: 1.1rem; font-weight: 700; color: #212529; }
+    .stock-chg-pos { font-size: 0.8rem; font-weight: 700; color: #198754; } /* Clean Green */
+    .stock-chg-neg { font-size: 0.8rem; font-weight: 700; color: #DC3545; } /* Clean Red */
     
-    /* ── Metric cards ── */
-    .metric-card {
-        background: #FFFFFF;
-        border-radius: 10px;
-        padding: 0.85rem 1rem;
-        border: 1px solid #E5E7EB;
-        text-align: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .metric-label {
-        font-size: 0.72rem;
-        color: #6B7280;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-    .metric-value {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #111827;
-    }
+    .badge-bullish { background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; border-radius: 6px; padding: 3px 10px; font-weight: 700; font-size: 0.8rem; }
+    .badge-bearish { background: #FFEBEE; color: #C62828; border: 1px solid #EF9A9A; border-radius: 6px; padding: 3px 10px; font-weight: 700; font-size: 0.8rem; }
+    .badge-approaching { background: #E3F2FD; color: #1565C0; border: 1px solid #90CAF9; border-radius: 6px; padding: 3px 10px; font-weight: 700; font-size: 0.8rem; }
+    .badge-neutral { background: #F5F5F5; color: #757575; border: 1px solid #E0E0E0; border-radius: 6px; padding: 3px 10px; font-weight: 700; font-size: 0.8rem; }
     
-    /* ── Signal badges (Clean Colors) ── */
-    .badge-bullish {
-        background: rgba(22, 163, 74, 0.1);
-        color: #16A34A;
-        border: 1px solid #16A34A;
-        border-radius: 6px;
-        padding: 2px 10px;
-        font-size: 0.78rem;
-        font-weight: 600;
-    }
-    .badge-bearish {
-        background: rgba(220, 38, 38, 0.1);
-        color: #DC2626;
-        border: 1px solid #DC2626;
-        border-radius: 6px;
-        padding: 2px 10px;
-        font-size: 0.78rem;
-        font-weight: 600;
-    }
-    .badge-approaching {
-        background: rgba(37, 99, 235, 0.1);
-        color: #2563EB;
-        border: 1px solid #2563EB;
-        border-radius: 6px;
-        padding: 2px 10px;
-        font-size: 0.78rem;
-        font-weight: 600;
-    }
-    .badge-neutral {
-        background: rgba(107, 114, 128, 0.1);
-        color: #6B7280;
-        border: 1px solid #6B7280;
-        border-radius: 6px;
-        padding: 2px 10px;
-        font-size: 0.78rem;
-        font-weight: 600;
-    }
-    
-    /* ── Buttons (Professional Blue) ── */
-    .stButton > button {
-        background: #2563EB !important;
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 0.4rem 1.2rem !important;
-    }
-    .stButton > button:hover { 
-        background: #1D4ED8 !important; 
-    }
-    
-    /* ── Sidebar header ── */
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 0.5rem 0 1rem 0;
-        border-bottom: 1px solid #E5E7EB;
-        margin-bottom: 1rem;
-    }
-    .sidebar-title {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: #2563EB;
-        letter-spacing: 0.04em;
-    }
-    .sidebar-sub {
-        font-size: 0.65rem;
-        color: #9CA3AF;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-    }
-    
-    /* ── Tables ── */
-    [data-testid="stDataFrame"] {
-        background: #FFFFFF !important;
-        border: 1px solid #E5E7EB !important;
-    }
-    
-    /* ── Inputs ── */
-    .stSelectbox > div > div,
-    .stTextInput > div > div > input {
-        background: #FFFFFF !important;
-        color: #1F2937 !important;
-        border: 1px solid #D1D5DB !important;
-        border-radius: 8px !important;
-    }
-    
-    /* ── Tabs ── */
-    .stTabs [data-baseweb="tab"] {
-        color: #6B7280;
-        font-weight: 600;
-    }
-    .stTabs [aria-selected="true"] {
-        color: #2563EB !important;
-        border-bottom-color: #2563EB !important;
-    }
-    
-    /* ── Expander ── */
-    .streamlit-expanderHeader {
-        background: #F9FAFB !important;
-        border-radius: 8px !important;
-        border: 1px solid #E5E7EB !important;
-        color: #111827 !important;
-    }
-    
-    /* ── Text Helpers ── */
-    .bull { color: #16A34A; font-weight: 700; }
-    .bear { color: #DC2626; font-weight: 700; }
-    .cyan { color: #2563EB; font-weight: 600; }
-    
-    /* ── Section headings ── */
-    .section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #111827;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        border-left: 3px solid #2563EB;
-        padding-left: 8px;
-        margin: 1.2rem 0 0.6rem 0;
-    }
-    
-    /* ── News tags ── */
-    .tag-positive { background: rgba(22,163,74,0.1); color: #16A34A; border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700; }
-    .tag-negative { background: rgba(220,38,38,0.1); color: #DC2626; border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700; }
-    .tag-neutral { background: rgba(107,114,128,0.1); color: #6B7280; border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700; }
-    
-    /* ── Progress bar ── */
-    .stProgress > div > div { background-color: #2563EB !important; }
-    
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #F3F4F6; }
-    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+    .stButton > button { background: #2563EB !important; color: white !important; font-weight: 600 !important; border-radius: 8px !important; border: none !important; }
+    .stButton > button:hover { background: #1D4ED8 !important; }
+    .sidebar-title { color: #2563EB !important; font-weight: 800; font-size: 1.2rem; }
+    .sidebar-sub { color: #ADB5BD !important; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .section-title { font-size: 0.95rem; font-weight: 700; color: #495057; border-left: 4px solid #2563EB; padding-left: 10px; margin: 1.5rem 0 1rem 0; text-transform: uppercase; letter-spacing: 0.05em;}
+    .tag-positive { background: #E8F5E9; color: #2E7D32; border-radius: 4px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+    .tag-negative { background: #FFEBEE; color: #C62828; border-radius: 4px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+    .tag-neutral { background: #F5F5F5; color: #757575; border-radius: 4px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+    .stTabs [aria-selected="true"] { color: #2563EB !important; border-bottom-color: #2563EB !important; font-weight: 700; }
+    .streamlit-expanderHeader { background: #FFFFFF !important; border: 1px solid #E0E0E0 !important; color: #495057 !important; font-weight: 600; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #CED4DA; border-radius: 4px; }
     </style>
     """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------------------------
-# NSE STOCK UNIVERSE — 250 highly liquid stocks
-# ---------------------------------------------------------------------------
-
-NIFTY_50 = [
-    "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
-    "HINDUNILVR", "ITC", "SBIN", "BHARTIARTL", "KOTAKBANK",
-    "LT", "AXISBANK", "ASIANPAINT", "MARUTI", "TITAN",
-    "BAJFINANCE", "NESTLEIND", "WIPRO", "ULTRACEMCO", "ONGC",
-    "ADANIENT", "POWERGRID", "NTPC", "JSWSTEEL", "TATAMOTORS",
-    "TECHM", "SUNPHARMA", "HCLTECH", "M&M", "BAJAJFINSV",
-    "TATASTEEL", "ADANIPORTS", "COALINDIA", "DRREDDY", "CIPLA",
-    "DIVISLAB", "APOLLOHOSP", "EICHERMOT", "BPCL", "GRASIM",
-    "BRITANNIA", "HEROMOTOCO", "INDUSINDBK", "HINDALCO", "TATACONSUM",
-    "SHRIRAMFIN", "SBILIFE", "HDFCLIFE", "BAJAJ-AUTO", "UPL",
-]
-
-NIFTY_NEXT_50 = [
-    "ADANIGREEN", "ADANITRANS", "AMBUJACEM", "AUROPHARMA", "BANKBARODA",
-    "BERGEPAINT", "BIOCON", "BOSCHLTD", "CANBK", "CHOLAFIN",
-    "COLPAL", "DABUR", "DLF", "GAIL", "GODREJCP",
-    "GODREJPROP", "HAVELLS", "ICICIGI", "ICICIPRULI", "INDHOTEL",
-    "INDUSTOWER", "IRCTC", "JINDALSTEL", "LUPIN", "MARICO",
-    "MCDOWELL-N", "MUTHOOTFIN", "NAUKRI", "NHPC", "NMDC",
-    "OBEROIRLTY", "OFSS", "PAGEIND", "PIIND", "PNB",
-    "RECLTD", "SAIL", "SIEMENS", "SRF", "TATACOMM",
-    "TORNTPHARM", "TRENT", "TVSMOTOR", "UBL", "UNIONBANK",
-    "VEDL", "VOLTAS", "WHIRLPOOL", "YESBANK", "ZYDUSLIFE",
-]
-
-FNO_STOCKS = [
-    "AARTIIND", "ABB", "ABBOTINDIA", "ABCAPITAL", "ABFRL",
-    "ACC", "AFFLE", "AJANTPHARM", "ALKEM", "ALKYLAMINE",
-    "AMARAJABAT", "AMBUJACEM", "ANGELONE", "APOLLOTYRE", "ATUL",
-    "AUBANK", "AUROPHARMA", "BALRAMCHIN", "BANDHANBNK", "BATAINDIA",
-    "BEL", "BHARATFORG", "BHARTIARTL", "BHEL", "BIKAJI",
-    "BLUEDART", "CAMS", "CANFINHOME", "CDSL", "CESC",
-    "CHAMBLFERT", "COFORGE", "CROMPTON", "CUMMINSIND", "CYIENT",
-    "DALBHARAT", "DEEPAKNTR", "DELTACORP", "DIXON", "DMART",
-    "ESCORTS", "EXIDEIND", "FEDERALBNK", "FINOLEXIND", "FLUOROCHEM",
-    "FSL", "GNFC", "GPPL", "GRANULES", "GSPL",
-    "GUJGASLTD", "HAPPSTMNDS", "HFCL", "HIKAL", "HINDPETRO",
-    "HUDCO", "IEX", "IFBIND", "IIFL", "INDIANB",
-    "INDIAMART", "INDIGO", "INOXWIND", "INTELLECT", "IPCALAB",
-    "IRFC", "ISEC", "J&KBANK", "JKCEMENT", "JKLAKSHMI",
-    "JKPAPER", "JUBLFOOD", "JUBLINGREA", "JUSTDIAL", "KALYANKJIL",
-    "KANSAINER", "KEI", "KFINTECH", "KNR", "KOTAKBANK",
-    "KPITTECH", "KRBL", "L&TFH", "LALPATHLAB", "LATENTVIEW",
-    "LICHSGFIN", "LINDEINDIA", "LXIT", "MANAPPURAM", "MAPMYINDIA",
-    "MCX", "METROPOLIS", "MGL", "MPHASIS", "MSSL",
-    "NATIONALUM", "NAUKRI", "NAVINFLUOR", "NBCC", "NESCO",
-    "NETWORK18", "NILKAMAL", "NLCINDIA", "NSLNISP", "OBEROIRLTY",
-    "OIL", "OLECTRA", "ONGC", "PERSISTENT", "PETRONET",
-    "PFIZER", "PHOENIXLTD", "PIDILITIND", "POLYCAB", "POLYMED",
-    "PRAJIND", "PVR", "RADICO", "RAJESHEXPO", "RAMCOCEM",
-    "RBLBANK", "ROUTE", "SANOFI", "SAPPHIRE", "SCHAEFFLER",
-    "SEQUENT", "SHYAMMETL", "SJVN", "SKFINDIA", "SOBHA",
-    "SONATSOFTW", "STARHEALTH", "STLTECH", "SUDARSCHEM", "SUMICHEM",
-    "SUNTV", "SUPREMEIND", "SUVENPHAR", "TANLA", "TATACHEM",
-    "TATAELXSI", "TATAINVEST", "TEAMLEASE", "THYROCARE", "TIMKEN",
-    "TTKPRESTIG", "TV18BRDCST", "TVSHLTD", "UJJIVANSFB", "VAIBHAVGBL",
-    "VBL", "VGUARD", "VINATIORGA", "VIPIND", "VSTIND",
-    "WELCORP", "WELSPUNLIV", "WINDMACHINES", "WIPRO", "ZEEL",
-]
-
-# Full 250-stock universe (deduplicated)
-NSE_250 = list(dict.fromkeys(NIFTY_50 + NIFTY_NEXT_50 + FNO_STOCKS))[:250]
-
-# Map display name → yfinance ticker (append .NS)
-def to_yf_ticker(symbol: str) -> str:
-    """Convert NSE symbol to yfinance format, e.g. RELIANCE → RELIANCE.NS"""
-    return f"{symbol}.NS"
-
-
-def format_currency(value: float) -> str:
-    """Format a number as Indian Rupees with ₹ symbol and comma separation."""
-    if abs(value) >= 1_00_00_000:
-        return f"₹{value/1_00_00_000:.2f} Cr"
-    elif abs(value) >= 1_00_000:
-        return f"₹{value/1_00_000:.2f} L"
-    else:
-        return f"₹{value:,.2f}"
-
-
-def color_pnl(value: float) -> str:
-    """Return HTML-colored span for P&L values."""
-    cls = "bull" if value >= 0 else "bear"
-    sign = "+" if value >= 0 else ""
-    return f'<span class="{cls}">{sign}{value:.2f}%</span>'
-
-
-def signal_badge(signal: str) -> str:
-    """Return HTML badge for HMA signal."""
-    mapping = {
-        "BULLISH": ('<span class="badge-bullish">🚀 BULLISH BREAKOUT</span>', ),
-        "BEARISH": ('<span class="badge-bearish">💀 BEARISH BREAKDOWN</span>', ),
-        "APPROACHING": ('<span class="badge-approaching">👀 APPROACHING HMA</span>', ),
-        "NEUTRAL": ('<span class="badge-neutral">— NEUTRAL</span>', ),
-    }
-    return mapping.get(signal, mapping["NEUTRAL"])[0]
-
-
-import os
-import streamlit as st
-
 def render_sidebar_header():
-    """Renders the Logo in the sidebar."""
     logo_path = os.path.join("assets", "logo.png")
-    if os.path.exists(logo_path):
-        st.image(logo_path, width=120)
-    else:
-        st.markdown("<h1 style='color:#2563EB;'>✈️</h1>", unsafe_allow_html=True)
-    
-    st.markdown("""
-        <div class="sidebar-title">TRADING ALTIMETER</div>
-        <div class="sidebar-sub">NAVIGATING THE MARKETS WITH COCKPIT DISCIPLINE</div>
-    """, unsafe_allow_html=True)
+    if os.path.exists(logo_path): st.image(logo_path, width=100)
+    else: st.markdown("<h1 style='color:#2563EB;'>✈️</h1>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-title'>TRADING ALTIMETER</div><div class='sidebar-sub'>Navigating The Markets With Cockpit Discipline</div>", unsafe_allow_html=True)
 
 def render_banner():
-    """Renders the wide banner on the main dashboard."""
     banner_path = os.path.join("assets", "banner.png")
-    if os.path.exists(banner_path):
-        st.image(banner_path, use_container_width=True)
-    else:
-        st.markdown("<h1 style='text-align:center;color:#2563EB;'>✈️ Trading Altimeter</h1>", unsafe_allow_html=True)
+    if os.path.exists(banner_path): st.image(banner_path, use_container_width=True)
+
+def signal_badge(signal):
+    mapping = {"BULLISH": "badge-bullish", "BEARISH": "badge-bearish", "APPROACHING": "badge-approaching"}
+    return f"<span class='{mapping.get(signal, 'badge-neutral')}'>{signal}</span>"
+
+def to_yf_ticker(symbol): return f"{symbol}.NS"
+
+NSE_250 = ["RELIANCE","TCS","INFY","HDFCBANK","ICICIBANK","HINDUNILVR","ITC","SBIN","BHARTIARTL","LT","KOTAKBANK","AXISBANK","ASIANPAINT","MARUTI","BAJFINANCE","WIPRO","TITAN","SUNPHARMA","TATAMOTORS","POWERGRID","NTPC","TATASTEEL","HCLTECH","ULTRACEMCO","NESTLEIND","ONGC","TECHM","COALINDIA","INDUSINDBK","JSWSTEEL","BPCL","ADANIENT","ADANIPORTS","DRREDDY","CIPLA","DIVISLAB","HEROMOTOCO","APOLLOHOSP","EICHERMOT","BRITANNIA","TRENT","GRASIM","HINDALCO","IOC","M&M","LTIM","SBILIFE","BAJAJFINSV","DMART","TATAPOWER","ADANIGREEN","DABUR","TVSMOTOR","BAJAJAUTO","PIDILITIND","EICHERMOT","SUNTV","YESBANK","PNB","CANBK","BANKBARODA","IDFCFIRSTB","FEDERALBNK","INDIANB","UNIONBANK","IRFC","IRCTC","TATACONSUM","SIEMENS","ZOMATO","PAYTM","NHPC","SJVN","TORNTPOWER","VEDL","NATIONALUM","NMDC","OIL","HINDPETRO","MRPL","CHOLAFIN","SHRIRAMFIN","MUTHOOTFIN","DELHIVERY","DIXON","COFORGE","PERSISTENT","MPHASIS","MOTHERSON","BOSCHLTD","ASHOKLEY","APOLLOTYRE","MRF","CEAT","JKTYRE","EMAMILTD","GODREJCP","COLPAL","RADICO","MCDOWELL-N","UBL","HUDCO","CONCOR","BEL","IRFC","SJVN","PTCIL","NTPC","POWERGRID","TATAPOWER","NHPC","SJVN","TORNTPOWER","ADANIGREEN","ADANITRANS","ADANI TOTAL GAS","ADANI PORTS","ADANI ENTERPRISES"]
+NIFTY_50 = NSE_250[:50]
