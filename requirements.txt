@@ -1,6 +1,5 @@
 streamlit
 pandas
-pandas_ta
 plotly
 vaderSentiment
 python-dotenv
