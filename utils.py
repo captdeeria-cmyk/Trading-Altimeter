@@ -298,51 +298,26 @@ def signal_badge(signal: str) -> str:
     return mapping.get(signal, mapping["NEUTRAL"])[0]
 
 
-def render_sidebar_header():
-    """Render the branded sidebar header with logo and app name."""
-    with st.sidebar:
-        try:
-            from PIL import Image
-            import os
-            if os.path.exists("assets/logo.png"):
-                col1, col2 = st.columns([1, 3])
-                with col1:
-                    st.image("assets/logo.png", width=52)
-                with col2:
-                    st.markdown("""
-                    <div style="padding-top:4px">
-                        <div class="sidebar-title">TRADING ALTIMETER</div>
-                        <div class="sidebar-sub">NSE Analytics Platform</div>
-                    </div>""", unsafe_allow_html=True)
-            else:
-                raise FileNotFoundError
-        except Exception:
-            st.markdown("""
-            <div class="sidebar-header">
-                <div>
-                    <div class="sidebar-title">✈ TRADING ALTIMETER</div>
-                    <div class="sidebar-sub">NSE Analytics Platform</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
+import os
+import streamlit as st
 
+def render_sidebar_header():
+    """Renders the Logo in the sidebar."""
+    logo_path = os.path.join("assets", "logo.png")
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=120)
+    else:
+        st.markdown("<h1 style='color:#2563EB;'>✈️</h1>", unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="sidebar-title">TRADING ALTIMETER</div>
+        <div class="sidebar-sub">NAVIGATING THE MARKETS WITH COCKPIT DISCIPLINE</div>
+    """, unsafe_allow_html=True)
 
 def render_banner():
-    """Render the top banner image or fallback text banner."""
-    try:
-        import os
-        if os.path.exists("assets/banner.png"):
-            st.image("assets/banner.png", use_column_width=True)
-        else:
-            raise FileNotFoundError
-    except Exception:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg,#0D1B2A 0%,#1C1E22 60%,#0B0E11 100%);
-                    border: 1px solid #00D4FF33; border-radius:12px; padding:1.5rem 2rem;
-                    margin-bottom:1.2rem; text-align:center;">
-            <div style="font-size:2rem;font-weight:900;color:#00D4FF;letter-spacing:0.12em">
-                ✈ TRADING ALTIMETER
-            </div>
-            <div style="font-size:0.8rem;color:#8A8D94;letter-spacing:0.2em;margin-top:4px">
-                NAVIGATING THE MARKETS WITH COCKPIT DISCIPLINE
-            </div>
-        </div>""", unsafe_allow_html=True)
+    """Renders the wide banner on the main dashboard."""
+    banner_path = os.path.join("assets", "banner.png")
+    if os.path.exists(banner_path):
+        st.image(banner_path, use_container_width=True)
+    else:
+        st.markdown("<h1 style='text-align:center;color:#2563EB;'>✈️ Trading Altimeter</h1>", unsafe_allow_html=True)
