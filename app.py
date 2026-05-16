@@ -23,8 +23,9 @@ st.set_page_config(
 )
 
 # ── Safe Module Imports ───────────────────────────────────────────────────
+# Remove 'to_yf_ticker' from this list entirely:
 from utils import (
-    inject_css, NSE_250, NIFTY_50, to_yf_ticker,
+    inject_css, NSE_250, NIFTY_50,
     render_sidebar_header, render_banner, signal_badge, format_currency,
 )
 from indicators import (
