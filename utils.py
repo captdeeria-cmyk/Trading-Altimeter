@@ -12,38 +12,42 @@ import streamlit as st
 # ---------------------------------------------------------------------------
 
 def inject_css():
-    """Inject global CSS for the Trading Altimeter aviation dark theme."""
+    """Inject global CSS for the Trading Altimeter PROFESSIONAL LIGHT THEME."""
     st.markdown("""
     <style>
-    /* ── Base ── */
+    /* ── FORCE PURE WHITE LIGHT MODE ── */
     html, body, [data-testid="stAppViewContainer"] {
-        background-color: #0B0E11 !important;
-        color: #E0E0E0 !important;
+        background-color: #F3F4F6 !important;
+        color: #1F2937 !important;
         font-family: 'Inter', 'Segoe UI', sans-serif;
     }
     [data-testid="stSidebar"] {
-        background-color: #0D1117 !important;
-        border-right: 1px solid #1C1E22;
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #E5E7EB !important;
     }
-    /* ── Cards ── */
+    
+    /* ── Cards (White with soft shadows) ── */
     .ta-card {
-        background: #1C1E22;
-        border: 1px solid #2A2D35;
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
         border-radius: 10px;
         padding: 1rem 1.25rem;
         margin-bottom: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
+    
     /* ── Metric cards ── */
     .metric-card {
-        background: #1C1E22;
+        background: #FFFFFF;
         border-radius: 10px;
         padding: 0.85rem 1rem;
-        border: 1px solid #2A2D35;
+        border: 1px solid #E5E7EB;
         text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .metric-label {
         font-size: 0.72rem;
-        color: #8A8D94;
+        color: #6B7280;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         margin-bottom: 4px;
@@ -51,141 +55,146 @@ def inject_css():
     .metric-value {
         font-size: 1.4rem;
         font-weight: 700;
-        color: #FFFFFF;
+        color: #111827;
     }
-    /* ── Signal badges ── */
+    
+    /* ── Signal badges (Clean Colors) ── */
     .badge-bullish {
-        background: rgba(0,230,118,0.15);
-        color: #00E676;
-        border: 1px solid #00E676;
+        background: rgba(22, 163, 74, 0.1);
+        color: #16A34A;
+        border: 1px solid #16A34A;
         border-radius: 6px;
         padding: 2px 10px;
         font-size: 0.78rem;
         font-weight: 600;
     }
     .badge-bearish {
-        background: rgba(255,23,68,0.15);
-        color: #FF1744;
-        border: 1px solid #FF1744;
+        background: rgba(220, 38, 38, 0.1);
+        color: #DC2626;
+        border: 1px solid #DC2626;
         border-radius: 6px;
         padding: 2px 10px;
         font-size: 0.78rem;
         font-weight: 600;
     }
     .badge-approaching {
-        background: rgba(0,212,255,0.15);
-        color: #00D4FF;
-        border: 1px solid #00D4FF;
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563EB;
+        border: 1px solid #2563EB;
         border-radius: 6px;
         padding: 2px 10px;
         font-size: 0.78rem;
         font-weight: 600;
     }
     .badge-neutral {
-        background: rgba(138,141,148,0.15);
-        color: #8A8D94;
-        border: 1px solid #8A8D94;
+        background: rgba(107, 114, 128, 0.1);
+        color: #6B7280;
+        border: 1px solid #6B7280;
         border-radius: 6px;
         padding: 2px 10px;
         font-size: 0.78rem;
         font-weight: 600;
     }
-    /* ── Buttons ── */
+    
+    /* ── Buttons (Professional Blue) ── */
     .stButton > button {
-        background: #00D4FF !important;
-        color: #0B0E11 !important;
+        background: #2563EB !important;
+        color: #FFFFFF !important;
         font-weight: 700 !important;
         border: none !important;
         border-radius: 8px !important;
         padding: 0.4rem 1.2rem !important;
-        transition: opacity 0.2s;
     }
-    .stButton > button:hover { opacity: 0.85 !important; }
+    .stButton > button:hover { 
+        background: #1D4ED8 !important; 
+    }
+    
     /* ── Sidebar header ── */
     .sidebar-header {
         display: flex;
         align-items: center;
         gap: 10px;
         padding: 0.5rem 0 1rem 0;
-        border-bottom: 1px solid #2A2D35;
+        border-bottom: 1px solid #E5E7EB;
         margin-bottom: 1rem;
     }
     .sidebar-title {
         font-size: 1.15rem;
         font-weight: 800;
-        color: #00D4FF;
+        color: #2563EB;
         letter-spacing: 0.04em;
     }
     .sidebar-sub {
         font-size: 0.65rem;
-        color: #8A8D94;
+        color: #9CA3AF;
         letter-spacing: 0.1em;
         text-transform: uppercase;
     }
+    
     /* ── Tables ── */
     [data-testid="stDataFrame"] {
-        background: #1C1E22 !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E5E7EB !important;
     }
-    /* ── Selectbox / Input ── */
+    
+    /* ── Inputs ── */
     .stSelectbox > div > div,
     .stTextInput > div > div > input {
-        background: #1C1E22 !important;
-        color: #E0E0E0 !important;
-        border: 1px solid #2A2D35 !important;
+        background: #FFFFFF !important;
+        color: #1F2937 !important;
+        border: 1px solid #D1D5DB !important;
         border-radius: 8px !important;
     }
+    
     /* ── Tabs ── */
     .stTabs [data-baseweb="tab"] {
-        color: #8A8D94;
+        color: #6B7280;
         font-weight: 600;
     }
     .stTabs [aria-selected="true"] {
-        color: #00D4FF !important;
-        border-bottom-color: #00D4FF !important;
+        color: #2563EB !important;
+        border-bottom-color: #2563EB !important;
     }
+    
     /* ── Expander ── */
     .streamlit-expanderHeader {
-        background: #1C1E22 !important;
+        background: #F9FAFB !important;
         border-radius: 8px !important;
-        color: #00D4FF !important;
+        border: 1px solid #E5E7EB !important;
+        color: #111827 !important;
     }
-    /* ── Positive / Negative text helpers ── */
-    .bull { color: #00E676; font-weight: 700; }
-    .bear { color: #FF1744; font-weight: 700; }
-    .cyan { color: #00D4FF; font-weight: 600; }
+    
+    /* ── Text Helpers ── */
+    .bull { color: #16A34A; font-weight: 700; }
+    .bear { color: #DC2626; font-weight: 700; }
+    .cyan { color: #2563EB; font-weight: 600; }
+    
     /* ── Section headings ── */
     .section-title {
         font-size: 1rem;
         font-weight: 700;
-        color: #00D4FF;
+        color: #111827;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        border-left: 3px solid #00D4FF;
+        border-left: 3px solid #2563EB;
         padding-left: 8px;
         margin: 1.2rem 0 0.6rem 0;
     }
-    /* ── News sentiment tags ── */
-    .tag-positive {
-        background: rgba(0,230,118,0.2); color: #00E676;
-        border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700;
-    }
-    .tag-negative {
-        background: rgba(255,23,68,0.2); color: #FF1744;
-        border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700;
-    }
-    .tag-neutral {
-        background: rgba(138,141,148,0.2); color: #8A8D94;
-        border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700;
-    }
+    
+    /* ── News tags ── */
+    .tag-positive { background: rgba(22,163,74,0.1); color: #16A34A; border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700; }
+    .tag-negative { background: rgba(220,38,38,0.1); color: #DC2626; border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700; }
+    .tag-neutral { background: rgba(107,114,128,0.1); color: #6B7280; border-radius: 4px; padding: 1px 8px; font-size: 0.72rem; font-weight: 700; }
+    
     /* ── Progress bar ── */
-    .stProgress > div > div { background-color: #00D4FF !important; }
+    .stProgress > div > div { background-color: #2563EB !important; }
+    
     /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0B0E11; }
-    ::-webkit-scrollbar-thumb { background: #2A2D35; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: #F3F4F6; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
     </style>
     """, unsafe_allow_html=True)
-
 
 # ---------------------------------------------------------------------------
 # NSE STOCK UNIVERSE — 250 highly liquid stocks
