@@ -75,4 +75,61 @@ def render_stock_analysis():
     if df.empty: st.error("Failed to fetch data."); return
     df = add_indicators(df)
     sig = classify_hma_signal(df)
-    quote = fetch_live_quote(sym
+    quote = fetch_live_quote(sym_ns)
+    
+    # HEADER METRICS
+    col1, col2, col3, col4 = st.columns(4)
+    with col1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{stock_input}</div><div class='metric-value'>₹{quote['ltp']:,.2f}</div><div style='color:{'#16A34A' if quote['change_pct']>=0 else '#DC2626'}; font-weight:700'>{quote['change_pct']:+.2f}%</div></div>", unsafe_allow_html=True)
+    with col2: st.markdown(f"<div class='metric-card'><div class='metric-label'>200 HMA</div><div class='metric-value'>₹{sig['hma_value']:,.2f}</div></div>", unsafe_allow_html=True)
+    with col3: st.markdown(f"<div class='metric-card'><div class='metric-label'>Distance to HMA</div><div class='metric-value' style='color:{'#16A34A' if sig['distance_pct']>=0 else '#DC2626'}'>{sig['distance_pct']:+.2f}%</div></div>", unsafe_allow_html=True)
+    with col4: st.markdown(f"<div class='ta-card' style='text-align:center'><div class='metric-label'>SIGNAL</div><div style='margin-top:8px'>{signal_badge(sig['signal'])}</div></div>", unsafe_allow_html=True)
+
+    # STRICT LIGHT MODE PLOTLY CHARTS
+    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, row_heights=[0.55, 0.15, 0.15, 0.15], vertical_spacing=0.02, subplot_titles=[f"{stock_input} ({interval})", "Volume", "RSI", "MACD"])
+    
+    # STRICT COLORS: Green/Red Candlesticks
+    fig.add_trace(go.Candlestick(x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"], increasing_line_color="#198754", decreasing_line_color="#DC3545"), row=1, col=1)
+    
+    # GOLD 200 HMA
+    fig.add_trace(go.Scatter(x=df.index, y=df["HMA_200"], line=dict(color="#D4A017", width=3), name="200 HMA"), row=1, col=1)
+    if "EMA_20" in df.columns: fig.add_trace(go.Scatter(x=df.index, y=df["EMA_20"], line=dict(color="#2979FF", width=1.2, dash="dot"), name="EMA 20"), row=1, col=1)
+    
+    # VOLUME BARS (Green/Red)
+    vol_colors = ["#198754" if df["Close"].iloc[i] >= df["Open"].iloc[i] else "#DC3545" for i in range(len(df))]
+    fig.add_trace(go.Bar(x=df.index, y=df["Volume"], marker_color=vol_colors, showlegend=False), row=2, col=1)
+    
+    # RSI (Blue)
+    if "RSI_14" in df.columns:
+        fig.add_trace(go.Scatter(x=df.index, y=df["RSI_14"], line=dict(color="#2979FF", width=1.5)), row=3, col=1)
+        fig.add_hline(y=70, line_color="#DC3545", line_dash="dash", row=3, col=1)
+        fig.add_hline(y=30, line_color="#198754", line_dash="dash", row=3, col=1)
+    
+    # MACD (Green/Red)
+    if "MACD" in df.columns:
+        fig.add_trace(go.Scatter(x=df.index, y=df["MACD"], line=dict(color="#2979FF", width=1.5)), row=4, col=1)
+        fig.add_trace(go.Scatter(x=df.index, y=df["MACD_Signal"], line=dict(color="#DC3545", width=1.5)), row=4, col=1)
+        hist_colors = ["#198754" if v >= 0 else "#DC3545" for v in df["MACD_Hist"].fillna(0)]
+        fig.add_trace(go.Bar(x=df.index, y=df["MACD_Hist"], marker_color=hist_colors, showlegend=False), row=4, col=1)
+
+    # FORCE WHITE THEME LAYOUT
+    fig.update_layout(height=800, template="plotly_white", paper_bgcolor="#F8F9FA", plot_bgcolor="#FFFFFF", font=dict(color="#495057"), xaxis_rangeslider_visible=False, margin=dict(l=40, r=20, t=40, b=20))
+    for annotation in fig.layout.annotations: annotation.font.color = "#6C757D"
+    st.plotly_chart(fig, use_container_width=True)
+
+def render_scanner():
+    render_banner()
+    if st.button("Run 200 HMA Scan (Takes 2 mins)", use_container_width=True):
+        res = []
+        for i, sym in enumerate(NSE_250):
+            res.append(batch_hma_status(to_yf_ticker(sym)))
+            st.progress((i+1)/len(NSE_250), text=f"Scanning {sym}...")
+        st.dataframe(res)
+
+def render_watchlist_page(): st.info("Watchlist feature loaded.")
+def render_portfolio_page(): st.info("Portfolio feature loaded.")
+
+if st.session_state["page"] == "Dashboard": render_dashboard()
+elif st.session_state["page"] == "Stock Analysis": render_stock_analysis()
+elif st.session_state["page"] == "HMA Scanner": render_scanner()
+elif st.session_state["page"] == "Watchlist": render_watchlist_page()
+elif st.session_state["page"] == "Portfolio": render_portfolio_page()
