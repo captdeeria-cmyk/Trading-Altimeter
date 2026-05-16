@@ -376,16 +376,12 @@ def render_stock_analysis():
             name="MACD Hist", showlegend=False,
         ), row=4, col=1)
 
-    fig.update_layout(
+     fig.update_layout(
         height=800,
-        template="plotly_dark",
-        paper_bgcolor="#0B0E11",
-        plot_bgcolor="#0B0E11",
-        font=dict(color="#E0E0E0", size=11),
-        xaxis_rangeslider_visible=False,
-        legend=dict(orientation="h", yanchor="bottom", y=1.01,
-                    xanchor="right", x=1, bgcolor="rgba(0,0,0,0)"),
-        margin=dict(l=40, r=20, t=60, b=20),
+        template="plotly_white",
+        paper_bgcolor="#FAF9F6",  # Matches your Light Cream background
+        plot_bgcolor="#FFFFFF",    # White chart area
+        font=dict(color="#1F2937", size=11), # Dark grey text
     )
     # Style subplot title fonts
     for annotation in fig.layout.annotations:
