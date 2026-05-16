@@ -1,7 +1,7 @@
-streamlit==1.36.0
-yfinance==0.2.38
-pandas==2.2.2
-plotly==5.22.0
-vaderSentiment==3.3.2
-python-dotenv==1.0.1
-requests==2.32.3
+streamlit
+yfinance
+pandas
+plotly
+vaderSentiment
+python-dotenv
+requests
