@@ -22,8 +22,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from indicators import fetch_ohlcv, compute_hma, HMA_LENGTH
-from utils import to_yf_ticker
+from indicators import calculate_dhan_indicators, compute_hma, HMA_LENGTH
 
 
 # ---------------------------------------------------------------------------
